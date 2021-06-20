@@ -1,2 +1,8 @@
 Cargo.lock
 /target
+notes.txt
+another.txt
+multiline.txt
+thing.txt
+
+.gitignore
