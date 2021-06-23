@@ -1,8 +1,4 @@
-use std::{
-    fs,
-    io::{self, Read},
-};
-
+use std::fs;
 use anyhow::{Result, Context};
 
 pub struct CommandFlags {
@@ -62,18 +58,94 @@ pub fn collect_files_to_string(file_vec: Vec<String>) -> Result<String> {
     Ok(master_string)
 }
 
+//fn print_command_flags(flags: CommandFlags) {
+//    println!("Show tabs{}
+//    Number NonBlanks {}
+//    Numbers {}
+//    Show Ends {}", flags.show_tabs, flags.number_nonblanks, flags.numbers, flags.show_ends);
+//}
+
 pub fn process_commands(command_vec: Vec<String>) -> CommandFlags {
     let mut flags = CommandFlags::new(); 
 
-    for i in command_vec[..] {
-        match i.as_mut_str() {
+    for i in command_vec {
+        match i.as_str() {
             "T" | "-show-tabs" => flags.show_tabs = true,
-            "b" | "-number-nonblanks" => flags.number_nonblanks = true,
+            "b" | "-number-nonblanks" => flags.number_nonblanks = true, //this overrides -n
             "E" | "-show_ends" => flags.show_ends = true,
             "n" | "-numbers" => flags.numbers = true,
-            _ => panic!("invalid option -- \"{}\"", i.as_mut_str),
+            "A" | "-show-all" | "ET" => { flags.show_tabs = true; flags.show_ends = true;},
+            _ => panic!("invalid option -- \"{}\"", i.as_str()),
         }
-    }    
-
+    }
     flags
+}
+
+fn number_lines(multiline_string: String) -> String {
+    let lines: Vec<&str> = multiline_string
+        .as_str()
+        .split_inclusive("\n")
+        .collect();
+
+    let mut output = String::new();
+
+    let mut number: u32 = 1;
+    for line in lines {
+        let numbered_line = &mut number.to_string();
+        numbered_line.push_str(&(format!(" {}", line)));
+        number += 1; 
+        &output.push_str(&(format!("     {}", numbered_line)));
+    }
+    
+    output
+}
+
+fn number_nonblanks(multiline_string: String) -> String {
+    let lines: Vec<&str> = multiline_string
+        .as_str()
+        .split_inclusive("\n")
+        .collect();
+
+    let mut output = String::new();
+
+    let mut number: u32 = 1;
+    for line in lines {
+        if line != "\n" {
+            let numbered_line = &mut number.to_string();
+            numbered_line.push_str(&(format!(" {}", line)));
+            number += 1; 
+            &output.push_str(&(format!("     {}", numbered_line)));
+        } else {
+            &output.push_str(line);
+        }
+    }
+    
+    output
+    
+}
+
+pub fn manipulate_master_string(mut master_string: String, flags: CommandFlags) {
+    //master_string = master_string.as_str();
+    
+    if flags.show_tabs {
+        master_string = master_string.replace("\t", "^I");
+    }
+
+    if flags.show_ends {
+        master_string = master_string.replace("\n", "$\n");
+    }
+
+    if flags.numbers {
+        if flags.number_nonblanks {
+            master_string = number_nonblanks(master_string);
+        } else {
+            master_string = number_lines(master_string);
+        }
+    }
+
+    if flags.number_nonblanks {
+        master_string = number_nonblanks(master_string);
+    }
+
+    println!("{}", master_string);
 }

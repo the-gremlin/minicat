@@ -1,4 +1,4 @@
-use std::{env, fs, error::Error};
+use std::env;
 use anyhow::Result;
 
 pub mod process;
@@ -11,8 +11,10 @@ fn main() -> Result<()> {
     let (file_vec, command_vec) = process::process_input(args[1..].to_vec());
 
     let massive_string = process::collect_files_to_string(file_vec)?;
+    
+    let flags = process::process_commands(command_vec); 
 
-    println!("{}", massive_string);
+    process::manipulate_master_string(massive_string, flags);
 
     Ok(())
 }
