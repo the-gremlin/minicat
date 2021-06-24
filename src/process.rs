@@ -5,7 +5,8 @@ pub struct CommandFlags {
     pub show_tabs: bool,
     pub number_nonblanks: bool,
     pub show_ends: bool,
-    pub numbers: bool    
+    pub numbers: bool,    
+    pub help: bool,
 } 
 
 impl CommandFlags {
@@ -15,6 +16,7 @@ impl CommandFlags {
             number_nonblanks: false,
             show_ends: false,
             numbers: false,
+            help: false,
         }
     }
 }
@@ -75,6 +77,7 @@ pub fn process_commands(command_vec: Vec<String>) -> CommandFlags {
             "E" | "-show_ends" => flags.show_ends = true,
             "n" | "-numbers" => flags.numbers = true,
             "A" | "-show-all" | "ET" => { flags.show_tabs = true; flags.show_ends = true;},
+            "-help" => flags.help = true,
             _ => panic!("invalid option -- \"{}\"", i.as_str()),
         }
     }
@@ -124,8 +127,29 @@ fn number_nonblanks(multiline_string: String) -> String {
     
 }
 
+fn show_help_message() {
+    println!(
+"Concatenate FILE(s) to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+
+  -A, --show-all           equivalent to -ET
+  -b, --number-nonblank    number nonempty output lines, overrides -n
+  -E, --show-ends          display $ at end of each line
+  -n, --number             number all output lines
+  -s, --squeeze-blank      suppress repeated empty output lines
+  -T, --show-tabs          display TAB characters as ^I
+      --help     display this help and exit"
+    );
+}
+
 pub fn manipulate_master_string(mut master_string: String, flags: CommandFlags) {
     //master_string = master_string.as_str();
+
+    if flags.help {
+        show_help_message();
+        return;
+    }
     
     if flags.show_tabs {
         master_string = master_string.replace("\t", "^I");
